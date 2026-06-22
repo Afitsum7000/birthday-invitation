@@ -1,0 +1,71 @@
+<script>
+  const noBtn = document.getElementById("noBtn");
+
+  document.addEventListener("mousemove", (e) => {
+    const rect = noBtn.getBoundingClientRect();
+
+    const distance = Math.hypot(
+      e.clientX - (rect.left + rect.width / 2),
+      e.clientY - (rect.top + rect.height / 2),
+    );
+
+    if (distance < 120) {
+      const maxX = window.innerWidth - rect.width - 20;
+
+      const maxY = window.innerHeight - rect.height - 20;
+
+      noBtn.style.left = Math.random() * maxX + "px";
+
+      noBtn.style.top = Math.random() * maxY + "px";
+    }
+  });
+
+  document.getElementById("yesBtn").addEventListener("click", async () => {
+    try {
+      await fetch("/api/notify", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: "Special Person",
+        }),
+      });
+    } catch (err) {
+      console.error(err);
+    }
+
+    document.getElementById("questionSection").style.display = "none";
+
+    document.getElementById("successSection").style.display = "block";
+
+    for (let i = 0; i < 80; i++) {
+      const heart = document.createElement("div");
+
+      heart.innerHTML = "❤️";
+
+      heart.style.position = "fixed";
+
+      heart.style.left = Math.random() * 100 + "vw";
+
+      heart.style.top = "-20px";
+
+      heart.style.fontSize = 20 + Math.random() * 30 + "px";
+
+      document.body.appendChild(heart);
+
+      let pos = -20;
+
+      const interval = setInterval(() => {
+        pos += 4;
+
+        heart.style.top = pos + "px";
+
+        if (pos > window.innerHeight) {
+          clearInterval(interval);
+          heart.remove();
+        }
+      }, 20);
+    }
+  });
+</script>
