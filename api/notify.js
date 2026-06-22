@@ -1,18 +1,22 @@
 export default async function handler(req, res) {
   if (req.method !== "POST") {
-    return res.status(405).json({
-      error: "Method Not Allowed",
-    });
+    return res.status(405).json({ error: "Method Not Allowed" });
+  }
+
+  const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
+  const CHAT_ID = process.env.TELEGRAM_CHAT_ID;
+
+  if (!BOT_TOKEN || !CHAT_ID) {
+    console.error("Missing TELEGRAM_BOT_TOKEN or TELEGRAM_CHAT_ID");
+    return res.status(500).json({ success: false, error: "Server not configured" });
   }
 
   try {
-    const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
+    const body =
+      typeof req.body === "string" ? JSON.parse(req.body) : req.body || {};
 
-    const CHAT_ID = process.env.TELEGRAM_CHAT_ID;
-
-    const body = req.body || {};
-
-    const name = body.name || "Unknown";
+    const answer = body.answer || "YES";
+    const name = body.name || "Special Person";
 
     const ip =
       req.headers["x-forwarded-for"] || req.socket?.remoteAddress || "Unknown";
@@ -22,6 +26,7 @@ export default async function handler(req, res) {
     const message = `
 ❤️ SHE SAID YES ❤️
 
+Answer: ${answer}
 Person: ${name}
 
 Time:
@@ -36,25 +41,30 @@ ${userAgent}
 Debre Zeyit Birthday Invitation Accepted 🎉
 `;
 
-    await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
+    const telegramResponse = await fetch(
+      `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          chat_id: CHAT_ID,
+          text: message,
+        }),
       },
-      body: JSON.stringify({
-        chat_id: CHAT_ID,
-        text: message,
-      }),
-    });
+    );
 
-    return res.status(200).json({
-      success: true,
-    });
+    const telegramData = await telegramResponse.json();
+
+    if (!telegramResponse.ok) {
+      console.error("Telegram API error:", telegramData);
+      return res.status(502).json({ success: false, error: "Telegram delivery failed" });
+    }
+
+    return res.status(200).json({ success: true });
   } catch (error) {
     console.error(error);
-
-    return res.status(500).json({
-      success: false,
-    });
+    return res.status(500).json({ success: false });
   }
 }

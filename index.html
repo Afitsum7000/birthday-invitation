@@ -1,49 +1,295 @@
-<script>
-  document.addEventListener("DOMContentLoaded", () => {
-    const noBtn = document.getElementById("noBtn");
-    const yesBtn = document.getElementById("yesBtn");
-
-    if (!noBtn || !yesBtn) {
-      console.error("Buttons not found");
-      return;
-    }
-
-    document.addEventListener("mousemove", (e) => {
-      const rect = noBtn.getBoundingClientRect();
-
-      const distance = Math.hypot(
-        e.clientX - (rect.left + rect.width / 2),
-        e.clientY - (rect.top + rect.height / 2),
-      );
-
-      if (distance < 120) {
-        const maxX = window.innerWidth - rect.width - 20;
-
-        const maxY = window.innerHeight - rect.height - 20;
-
-        noBtn.style.left = Math.random() * maxX + "px";
-
-        noBtn.style.top = Math.random() * maxY + "px";
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Will You Be My Valentine? ❤️</title>
+    <link rel="icon" href="data:," />
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
       }
-    });
 
-    yesBtn.addEventListener("click", async () => {
-      try {
-        await fetch("/api/notify", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            answer: "YES",
-          }),
+      body {
+        min-height: 100vh;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #ff6b9d 0%, #c44569 40%, #f8b500 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+        color: #333;
+      }
+
+      .card {
+        background: #fff;
+        border-radius: 24px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+        max-width: 640px;
+        width: 100%;
+        padding: 48px 40px;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .card::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 6px;
+        background: linear-gradient(90deg, #ff6b9d, #c44569, #f8b500);
+      }
+
+      h1 {
+        font-size: 2rem;
+        color: #c44569;
+        margin-bottom: 8px;
+      }
+
+      .subtitle {
+        font-size: 1.1rem;
+        color: #888;
+        margin-bottom: 32px;
+      }
+
+      .message {
+        text-align: left;
+        line-height: 1.85;
+        font-size: 1.05rem;
+        color: #444;
+        margin-bottom: 36px;
+      }
+
+      .message p {
+        margin-bottom: 16px;
+      }
+
+      .message p:last-child {
+        margin-bottom: 0;
+      }
+
+      .question {
+        font-size: 1.4rem;
+        font-weight: 600;
+        color: #c44569;
+        margin-bottom: 28px;
+      }
+
+      .buttons {
+        position: relative;
+        min-height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 20px;
+        flex-wrap: wrap;
+      }
+
+      .btn {
+        border: none;
+        border-radius: 50px;
+        padding: 14px 36px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: transform 0.2s, box-shadow 0.2s;
+      }
+
+      .btn-yes {
+        background: linear-gradient(135deg, #ff6b9d, #c44569);
+        color: #fff;
+        box-shadow: 0 6px 20px rgba(196, 69, 105, 0.4);
+      }
+
+      .btn-yes:hover {
+        transform: scale(1.05);
+        box-shadow: 0 8px 28px rgba(196, 69, 105, 0.5);
+      }
+
+      .btn-no {
+        background: #e0e0e0;
+        color: #666;
+        position: relative;
+      }
+
+      .btn-no:hover {
+        background: #d0d0d0;
+      }
+
+      #successSection {
+        animation: fadeIn 0.6s ease;
+      }
+
+      #successSection h2 {
+        font-size: 2rem;
+        color: #c44569;
+        margin-bottom: 16px;
+      }
+
+      #successSection p {
+        font-size: 1.15rem;
+        line-height: 1.7;
+        color: #555;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .heart-particle {
+        position: fixed;
+        pointer-events: none;
+        z-index: 9999;
+        user-select: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="card">
+      <div id="questionSection">
+        <h1>My Dearest ❤️</h1>
+        <p class="subtitle">A message from the bottom of my heart</p>
+
+        <div class="message">
+          <p>
+            From the moment you walked into my life, everything changed. The
+            world became brighter, warmer, and infinitely more beautiful — not
+            because the sun shone differently, but because you were in it.
+          </p>
+          <p>
+            Every laugh we share, every quiet moment together, every glance
+            across the room — they all remind me how lucky I am to have found
+            someone as incredible as you. You are the melody in my silence and
+            the light in my darkest days.
+          </p>
+          <p>
+            I have been thinking about this for a long time, gathering every
+            ounce of courage in my heart. There is a special day coming — my
+            birthday celebration in Debre Zeyit — and I cannot imagine
+            celebrating it without you by my side.
+          </p>
+          <p>
+            So here I am, heart wide open, asking you the question that has
+            been dancing on my lips: Will you come? Will you be there with me,
+            to make that day the most magical one yet?
+          </p>
+          <p>
+            I promise laughter, warmth, unforgettable memories, and a piece of
+            my heart reserved only for you. Say yes, and let us write another
+            beautiful chapter together.
+          </p>
+        </div>
+
+        <p class="question">Will you be my Valentine and join me? 💕</p>
+
+        <div class="buttons">
+          <button id="yesBtn" class="btn btn-yes" type="button">
+            YES ❤️
+          </button>
+
+          <button id="noBtn" class="btn btn-no" type="button">
+            NO 💔
+          </button>
+        </div>
+      </div>
+
+      <div id="successSection" style="display: none">
+        <h2>You said YES! 🎉❤️</h2>
+        <p>
+          My heart is overflowing with joy! I cannot wait to celebrate with you
+          in Debre Zeyit. This is going to be the most beautiful birthday ever,
+          because you'll be there with me. See you soon, my love! 💕
+        </p>
+      </div>
+    </div>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const noBtn = document.getElementById("noBtn");
+        const yesBtn = document.getElementById("yesBtn");
+        const questionSection = document.getElementById("questionSection");
+        const successSection = document.getElementById("successSection");
+
+        if (!noBtn || !yesBtn || !questionSection || !successSection) {
+          console.error("Buttons not found");
+          return;
+        }
+
+        document.addEventListener("mousemove", (e) => {
+          const rect = noBtn.getBoundingClientRect();
+
+          const distance = Math.hypot(
+            e.clientX - (rect.left + rect.width / 2),
+            e.clientY - (rect.top + rect.height / 2),
+          );
+
+          if (distance < 120) {
+            noBtn.style.position = "fixed";
+            noBtn.style.zIndex = "1000";
+
+            const maxX = window.innerWidth - rect.width - 20;
+            const maxY = window.innerHeight - rect.height - 20;
+
+            noBtn.style.left = Math.max(20, Math.random() * maxX) + "px";
+            noBtn.style.top = Math.max(20, Math.random() * maxY) + "px";
+          }
         });
-      } catch (err) {
-        console.error(err);
-      }
 
-      document.getElementById("questionSection").style.display = "none";
-      document.getElementById("successSection").style.display = "block";
-    });
-  });
-</script>
+        function spawnHearts() {
+          for (let i = 0; i < 80; i++) {
+            const heart = document.createElement("div");
+            heart.className = "heart-particle";
+            heart.textContent = "❤️";
+            heart.style.left = Math.random() * 100 + "vw";
+            heart.style.top = "-20px";
+            heart.style.fontSize = 20 + Math.random() * 30 + "px";
+            document.body.appendChild(heart);
+
+            let pos = -20;
+            const interval = setInterval(() => {
+              pos += 4;
+              heart.style.top = pos + "px";
+
+              if (pos > window.innerHeight) {
+                clearInterval(interval);
+                heart.remove();
+              }
+            }, 20);
+          }
+        }
+
+        yesBtn.addEventListener("click", async () => {
+          try {
+            await fetch("/api/notify", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                answer: "YES",
+              }),
+            });
+          } catch (err) {
+            console.error(err);
+          }
+
+          questionSection.style.display = "none";
+          successSection.style.display = "block";
+          spawnHearts();
+        });
+      });
+    </script>
+  </body>
+</html>
